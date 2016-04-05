@@ -43,3 +43,6 @@ obj-$(CONFIG_USB_G_WEBCAM)	+= g_webcam.o
 obj-$(CONFIG_USB_G_NCM)		+= g_ncm.o
 obj-$(CONFIG_USB_G_ACM_MS)	+= g_acm_ms.o
 obj-$(CONFIG_USB_GADGET_TARGET)	+= tcm_usb_gadget.o
+
+g_gromit-y			:= gromit_usb.o
+obj-$(CONFIG_USB_G_GROMIT)	+= g_gromit.o
