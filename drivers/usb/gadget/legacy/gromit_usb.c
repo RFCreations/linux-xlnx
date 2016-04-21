@@ -57,29 +57,17 @@
 #include <linux/usb/composite.h>
 #include <linux/delay.h>
 
+#include "u_os_desc.h"
+
 #include "gromit_usb.h"
 #include "gadget_chips.h"
 
 
 /*-------------------------------------------------------------------------*/
 
-/*
- * Kbuild is not very cooperative with respect to linking separately
- * compiled library objects into one module.  So for now we won't use
- * separate compilation ... ensuring init/exit sections work to shrink
- * the runtime footprint, and giving us at least some parts of what
- * a "gcc --combine ... part1.c part2.c part3.c ... " build would.
- */
-#include "composite.c"
-#include "usbstring.c"
-#include "config.c"
-#include "epautoconf.c"
-
-
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("RF Creations Ltd");
 MODULE_DESCRIPTION("gromit_usb - USB gadget driver for Gromit");
-
 
 /*-------------------------------------------------------------------------*/
 #define DRIVER_NAME "gromit_usb"
@@ -1619,7 +1607,7 @@ static int gromit_comp_driver_unbind(struct usb_composite_dev *cdev)
 }
 
 /*-------------------------------------------------------------------------*/
-static struct usb_composite_driver gromit_comp_driver = 
+static __refdata struct usb_composite_driver gromit_comp_driver = 
 {
    .name    = "gromit_usb",
    .max_speed = USB_SPEED_FULL,

@@ -493,8 +493,7 @@ config USB_G_WEBCAM
 
 config USB_G_GROMIT
 	tristate "Composite gadget for Gromit board"
+	select USB_LIBCOMPOSITE
 	help
 	  Say "y" to link the driver statically, or "m" to build a
 	  dynamically linked module called "g_gromit".
-
-
