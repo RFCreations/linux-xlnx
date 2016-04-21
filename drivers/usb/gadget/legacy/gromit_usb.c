@@ -72,8 +72,13 @@ MODULE_DESCRIPTION("gromit_usb - USB gadget driver for Gromit");
 /*-------------------------------------------------------------------------*/
 #define DRIVER_NAME "gromit_usb"
 #define DRIVER_VERSION  "2015-05-06"
-#define DRIVER_VENDOR_NUM 0x2BBD /* RF Creations */
-#define DRIVER_PRODUCT_NUM 0xF020
+#define DRIVER_VENDOR_NUM_DEF 0x2BBD /* RF Creations */
+#define DRIVER_PRODUCT_NUM_DEF 0xF020
+static ushort DRIVER_VENDOR_NUM __initdata = 0x2BBD; /* RF Creations */
+static ushort DRIVER_PRODUCT_NUM __initdata = 0xF020;
+
+module_param( DRIVER_VENDOR_NUM , ushort , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+module_param( DRIVER_PRODUCT_NUM , ushort , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 /*-------------------------------------------------------------------------*/
 // Number of requests to allocate up front per endpoint
@@ -1439,8 +1444,8 @@ static struct usb_device_descriptor device_desc =
    .bcdUSB = cpu_to_le16(0x0200),
    .bDeviceClass = USB_CLASS_VENDOR_SPEC,
    
-   .idVendor = cpu_to_le16(DRIVER_VENDOR_NUM),
-   .idProduct = cpu_to_le16(DRIVER_PRODUCT_NUM),
+   .idVendor = cpu_to_le16(DRIVER_VENDOR_NUM_DEF),
+   .idProduct = cpu_to_le16(DRIVER_PRODUCT_NUM_DEF),
    .bNumConfigurations = 1,
 };
 
@@ -1450,18 +1455,20 @@ static struct usb_device_descriptor device_desc =
 #define STRING_PRODUCT_IDX       1
 #define STRING_SERIAL_IDX        2
 
-static char manufacturer[] = "RF Creations";
-static const char longname[] = "Moreph20";
+static char *manufacturer __initdata = "RF Creations";
+static char *longname __initdata = "Moreph20";
 
 /* default serial number takes at least two packets */
-static char *iSerialNumber = "0123456789.0123456789.0123456789";
+static char *iSerialNumber __initdata = "0123456789.0123456789.0123456789";
 
 module_param( iSerialNumber , charp , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+module_param( manufacturer , charp , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+module_param( longname , charp , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
 
 static struct usb_string device_str[] = 
 {
-   [STRING_MANUFACTURER_IDX].s = manufacturer,
-   [STRING_PRODUCT_IDX].s = longname,
+   [STRING_MANUFACTURER_IDX].s = NULL, //manufacturer,
+   [STRING_PRODUCT_IDX].s = NULL, //longname,
    [STRING_SERIAL_IDX].s = NULL,
    {  }   /* end of list */
 };
@@ -1491,6 +1498,10 @@ static int __init gromit_comp_driver_bind(struct usb_composite_dev *cdev)
     * contents can be overridden by the composite_dev glue.
     */
 
+   device_desc.idVendor = cpu_to_le16(DRIVER_VENDOR_NUM);
+   device_desc.idProduct = cpu_to_le16(DRIVER_PRODUCT_NUM);
+
+
    PDEBUG ("GROMIT BIND\n");
    // Initialise the private data
    memset(&gromit_data, 0, sizeof(gromit_data));
@@ -1503,6 +1514,7 @@ static int __init gromit_comp_driver_bind(struct usb_composite_dev *cdev)
 
    device_str[STRING_MANUFACTURER_IDX].id = id;
    device_desc.iManufacturer = id;
+   device_str[STRING_MANUFACTURER_IDX].s = manufacturer;
 
    id = usb_string_id(cdev);
    if (id < 0)
@@ -1512,6 +1524,7 @@ static int __init gromit_comp_driver_bind(struct usb_composite_dev *cdev)
 
    device_str[STRING_PRODUCT_IDX].id = id;
    device_desc.iProduct = id;
+   device_str[STRING_PRODUCT_IDX].s = longname;
 
    id = usb_string_id(cdev);
    if (id < 0)
