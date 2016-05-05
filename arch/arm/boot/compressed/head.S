@@ -183,6 +183,24 @@ not_angel:
 
 		.text
 
+		/* Zynq hack: Unmap OCM and map DDR into low 1MB of address space. (This is the only useful thing done by uboot) */
+		/* SLCR Unlock */
+		ldr r1, =0xF8000008
+		ldr r2, =0xDF0D
+		str r2, [r1]
+		/* SLCR OCM_CFG */
+		ldr r1, =0xF8000910
+		ldr r2, =0xF
+		str r2, [r1]
+		/* SCU FILTERSTART */
+		ldr r1, =0xF8F00040
+		ldr r2, =0x0
+		str r2, [r1]
+		/* SLCR Lock */
+		ldr r1, =0xF8000004
+		ldr r2, =0x767B
+		str r2, [r1]
+		
 #ifdef CONFIG_AUTO_ZRELADDR
 		/*
 		 * Find the start of physical memory.  As we are executing
