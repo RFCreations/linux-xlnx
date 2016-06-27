@@ -93,6 +93,12 @@ config PCIE_XILINX
 	  Say 'Y' here if you want kernel to support the Xilinx AXI PCIe
 	  Host Bridge driver.
 
+config PCIE_XILINX_DT
+	tristate "Xilinx AXI PCIe host bridge device tree module"
+	depends on PCIE_XILINX
+	help
+	  Say 'M' here if you want to have a loadable PCIe DT overlay.
+
 config PCI_XGENE
 	bool "X-Gene PCIe controller"
 	depends on ARCH_XGENE
