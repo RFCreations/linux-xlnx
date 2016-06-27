@@ -102,11 +102,17 @@ static int zynqmp_pm_ret_code(u32 ret_status)
 	}
 }
 
+static noinline int do_fw_call_fail(u64 arg0, u64 arg1, u64 arg2,
+				    u32 *ret_payload)
+{
+	return -ENODEV;
+}
+
 /*
  * PM function call wrapper
  * Invoke do_fw_call_smc or do_fw_call_hvc, depending on the configuration
  */
-static int (*do_fw_call)(u64, u64, u64, u32 *ret_payload);
+static int (*do_fw_call)(u64, u64, u64, u32 *ret_payload) = do_fw_call_fail;
 
 /**
  * do_fw_call_smc - Call system-level power management layer (SMC)
@@ -364,13 +370,12 @@ EXPORT_SYMBOL_GPL(zynqmp_pm_request_node);
 /**
  * zynqmp_pm_release_node - PM call to release a node
  * @node:	Node ID of the slave
- * @latency:	Requested maximum wakeup latency
  *
  * Return:	Returns status, either success or error+reason
  */
-int zynqmp_pm_release_node(const u32 node, const u32 latency)
+int zynqmp_pm_release_node(const u32 node)
 {
-	return invoke_pm_fn(RELEASE_NODE, node, latency, 0, 0, NULL);
+	return invoke_pm_fn(RELEASE_NODE, node, 0, 0, 0, NULL);
 }
 EXPORT_SYMBOL_GPL(zynqmp_pm_release_node);
 
@@ -503,7 +508,8 @@ static int zynqmp_pm_register_notifier(const u32 node, const u32 event,
  *
  * Return:		Returns status, either success or error+reason
  */
-int zynqmp_pm_reset_assert(const u32 reset, const u32 assert_flag)
+int zynqmp_pm_reset_assert(const enum zynqmp_pm_reset reset,
+			   const enum zynqmp_pm_reset_action assert_flag)
 {
 	return invoke_pm_fn(RESET_ASSERT, reset, assert_flag, 0, 0, NULL);
 }
@@ -516,7 +522,7 @@ EXPORT_SYMBOL_GPL(zynqmp_pm_reset_assert);
  *
  * Return:	Returns status, either success or error+reason
  */
-int zynqmp_pm_reset_get_status(const u32 reset, u32 *status)
+int zynqmp_pm_reset_get_status(const enum zynqmp_pm_reset reset, u32 *status)
 {
 	u32 ret_payload[PAYLOAD_ARG_CNT];
 
@@ -739,12 +745,10 @@ static ssize_t zynqmp_pm_debugfs_api_write(struct file *file,
 					ZYNQMP_PM_CAPABILITY_ACCESS,
 			pm_api_arg[2] ? pm_api_arg[2] : 0,
 			pm_api_arg[3] ? pm_api_arg[3] :
-				ZYNQMP_PM_REQUEST_ACK_CALLBACK_STANDARD);
+				ZYNQMP_PM_REQUEST_ACK_NON_BLOCKING);
 		break;
 	case RELEASE_NODE:
-		ret = zynqmp_pm_release_node(pm_api_arg[0],
-				pm_api_arg[1] ? pm_api_arg[1] :
-						ZYNQMP_PM_MAX_LATENCY);
+		ret = zynqmp_pm_release_node(pm_api_arg[0]);
 		break;
 	case SET_REQUIREMENT:
 		ret = zynqmp_pm_set_requirement(pm_api_arg[0],
@@ -752,7 +756,7 @@ static ssize_t zynqmp_pm_debugfs_api_write(struct file *file,
 					ZYNQMP_PM_CAPABILITY_CONTEXT,
 			pm_api_arg[2] ? pm_api_arg[2] : 0,
 			pm_api_arg[3] ? pm_api_arg[3] :
-				ZYNQMP_PM_REQUEST_ACK_CALLBACK_STANDARD);
+				ZYNQMP_PM_REQUEST_ACK_NON_BLOCKING);
 		break;
 	case SET_MAX_LATENCY:
 		ret = zynqmp_pm_set_max_latency(pm_api_arg[0],
@@ -989,6 +993,9 @@ static int zynqmp_pm_probe(struct platform_device *pdev)
 		       __func__,
 		       ZYNQMP_PM_VERSION_MAJOR, ZYNQMP_PM_VERSION_MINOR,
 		       pm_api_version >> 16, pm_api_version & 0xffff);
+
+		do_fw_call = do_fw_call_fail;
+
 		return -EIO;
 	}
 
