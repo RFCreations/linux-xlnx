@@ -111,6 +111,9 @@
  * @resources: Bus Resources
  */
 struct xilinx_pcie_port {
+#ifdef CONFIG_ARM
+	struct pci_sys_data sysdata;
+#endif
 	void __iomem *reg_base;
 	u32 irq;
 	unsigned long msi_pages;
