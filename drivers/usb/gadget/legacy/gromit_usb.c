@@ -60,7 +60,6 @@
 #include "u_os_desc.h"
 
 #include "gromit_usb.h"
-#include "gadget_chips.h"
 
 
 /*-------------------------------------------------------------------------*/
