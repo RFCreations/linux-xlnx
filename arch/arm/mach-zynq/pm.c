@@ -225,6 +225,13 @@ static void __iomem *zynq_pm_ioremap(const char *comp)
 	return base;
 }
 
+static void moreph_power_off(void) {
+	//Moreph power down
+	uint32_t* p = ioremap(0x41300000, 4096);
+	p[0] = 0x80000000;
+	p[256] = 0x80000000;
+}
+
 /**
  * zynq_pm_late_init() - Power management init
  *
@@ -233,6 +240,8 @@ static void __iomem *zynq_pm_ioremap(const char *comp)
 void __init zynq_pm_late_init(void)
 {
 	u32 reg;
+
+	pm_power_off = moreph_power_off;
 
 	ddrc_base = zynq_pm_ioremap("xlnx,zynq-ddrc-a05");
 	if (!ddrc_base) {
