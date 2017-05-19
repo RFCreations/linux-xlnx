@@ -587,6 +587,7 @@ static ssize_t send_data(struct gromit_devfile *data,
       // Set up fields
       ptr->req->complete = bulk_ep_complete;
       ptr->req->context = ptr;
+      ptr->req->zero = 1;
 
       // 'buf' may be NULL, if we're just flushing out pending data
       if (!copy_from_user(ptr->req->buf, buf, length))
