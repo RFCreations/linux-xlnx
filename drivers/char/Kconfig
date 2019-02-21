@@ -385,6 +385,13 @@ config XILINX_DEVCFG
 	  This option enables support for the Xilinx device configuration driver.
 	  If unsure, say N
 
+config USERDMA
+	tristate "Userspace DMA Allocator"
+	depends on HAVE_DMA_CONTIGUOUS
+	help
+	  This option enables support for the userspace DMA allocator.
+	  If unsure, say N
+
 config R3964
 	tristate "Siemens R3964 line discipline"
 	depends on TTY
