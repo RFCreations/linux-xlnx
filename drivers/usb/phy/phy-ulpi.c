@@ -220,6 +220,12 @@ static int ulpi_init(struct usb_phy *phy)
 	if (ret)
 		return ret;
 
+	// Disable VBUS valid interrupt
+	usb_phy_io_write(phy, ULPI_INT_HOST_DISCONNECT | ULPI_INT_SESS_VALID
+		| ULPI_INT_SESS_END | ULPI_INT_IDGRD, ULPI_USB_INT_EN_RISE);
+	usb_phy_io_write(phy, ULPI_INT_HOST_DISCONNECT | ULPI_INT_SESS_VALID
+		| ULPI_INT_SESS_END | ULPI_INT_IDGRD, ULPI_USB_INT_EN_FALL);
+
 	return ulpi_set_flags(phy);
 }
 
